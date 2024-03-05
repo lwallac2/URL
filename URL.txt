@@ -1,0 +1,58 @@
+#####
+#EV MDM URL Creator
+#
+#This puts together a url for all meters that have an EV
+#
+#####
+
+import pandas as pd
+
+#this tells the code where to find the excel files
+
+gis_data = ""\\hendricks4\Share\DataAnalytics\code_vault\sand_box\Logan\EV History.xlsx"" #This is the EV data from SS
+mosaic_data = ""\\hendricks4\Share\DataAnalytics\code_vault\sand_box\Logan\Active Accounts 2024.xlsx"" #This is the data downloaded from Mosaic
+??????
+output ="C:/Users/mackenzieh/Downloads/Completed_Urls.csv" #this is where the results urls will go
+
+#This holds the pieces of the url that do not change
+
+begin = "https://hendrickspower.cloud.coop/mdm/tools/analytics/#explorer:1!0!" #opening part
+second = "!hendrickspower!" #after the service location but before the service location reference id
+problem = "!Ui0xNkwtNDhMLTE2TC02TC0zMy4xQQ=="# this is something I don't know what it does but it doesn't seem to matter at the current moment
+date = "!1677646800000!1711944000000!" #This leads you to the correct date and time range
+then = "MONTHLY!ELECTRIC!" #This tells it what kind of graph you would like to see
+final = "=2004@@VEE&:!ELECTRIC,!false!null!" #this is the last part before the account number
+
+#this reads in the data from the excel files
+
+gis_df = pd.read_excel(gis_data)
+mosaic_df = pd.read_excel(mosaic_data)
+
+#this creates the dataframe we are going to need to put the data to make all of the urls
+
+df_urls = pd.DataFrame(columns = ["Srv loc", "loc id", "asset id", "account number", "url"])
+
+#This loops through every EV account in gis_data
+
+for index, row in gis_df.iterrows():
+    meter = row["Meter Number"] #this gets the meter # of interest
+    if (not (meter == meter)):#this accounts for a row with no meter number
+        meter = 0
+    mrow = mosaic_df[mosaic_df["Meter Number"] == meter]#this pulls the ID information needed from the mosaic dataset
+
+    #this grabs the needed information for the url
+
+    srvloc = row["Service Map Loc"]
+    if (srvloc != srvloc): #this accounts for if there is no service location
+        srvloc = 0
+   ?? srvlocid = mrow["Service Location Reference ID"]
+   ?? assetid = mrow["Asset Reference ID"]
+    accountnumber = row["Account"]
+    if (accountnumber != accountnumber):
+        accountnumber = 0 #This accounts for if there is no account number
+
+    url = begin + str(int(srvloc)) + second + str(srvlocid.squeeze()) + problem + date + then + str(assetid.squeeze()) + final + str(int(accountnumber)) #this makes the url
+    
+    new_row = {"Srv loc": srvloc, "loc id": srvlocid.squeeze(), "asset id": assetid.squeeze(), "account number": accountnumber, "url": url} #this creates a row for the dataframe
+
+    df_urls = df_urls.append(new_row, ignore_index = True) #tis adds the new row to the dataframe
